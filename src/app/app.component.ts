@@ -23,9 +23,13 @@ export class AppComponent {
    */
   cacheErrors(context: string[], obj: any) {
     Object.keys(obj).forEach(key => {
+      if (key.startsWith('__')) {
+        return;
+      }
+
       const currentContext = [...context, key];
       if (obj[key]['log']) {
-        if (obj[key]['status'] === 'FAILED' ) {
+        if (obj[key]['status'] === 'FAILED') {
           this.errors.push({
             key: currentContext.join(' '),
             context: currentContext,
