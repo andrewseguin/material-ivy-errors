@@ -1,20 +1,21 @@
 <div class="header">
-  <div class="num-failures">
-    Failures: {{errors?.length || '--'}}
+  <div class="name" *ngIf="name">
+    {{name}} - {{errors?.length || '--'}} failures
   </div>
 
-  <div class="filter-container" *ngIf="errors?.length">
+  <div class="filter-container">
     <mat-icon>search</mat-icon>
     <textarea #filter mat-autosize placeholder="Filter"></textarea>
   </div>
 
-  <input type="file" name="file" id="file"
-         (change)="importFile($event.target)"
-         [style.display]="'none'"/>
-  <label for="file" matRipple
-          class="mat-elevation-z4">
-    Upload JSON
-  </label>
+  <button mat-button (click)="uploadJson()">
+    Upload
+  </button>
 </div>
 
 <error-count [errors]="errors" [filter]="filter.value" *ngIf="errors?.length"></error-count>
+
+<div *ngIf="loading" class="loading">
+  Loading results
+  <mat-spinner diameter="48"></mat-spinner>
+</div>

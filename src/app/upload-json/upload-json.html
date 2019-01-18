@@ -1,0 +1,27 @@
+<h1 mat-dialog-title> Upload Karma Results </h1>
+
+<div mat-dialog-content (keydown.Enter)="save(); $event.preventDefault()">
+  <mat-form-field appearance="outline">
+    <mat-label>Upload name</mat-label>
+    <input matInput [formControl]="nameFormControl">
+  </mat-form-field>
+
+  <input type="file" name="file" id="file"
+         (change)="setFile($event.target)"
+         [style.display]="'none'"/>
+  <label for="file" matRipple
+          class="mat-elevation-z4">
+    {{buttonText}}
+  </label>
+</div>
+
+<ng-container *ngIf="uploadPercent | async; let value">
+  <mat-progress-bar [value]="value"></mat-progress-bar>
+</ng-container>
+
+<div mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close> Cancel </button>
+  <button mat-raised-button color="primary"
+          [disabled]="!file || nameFormControl.invalid || (uploadPercent | async) > 0"
+          (click)="upload()"> Upload </button>
+</div>

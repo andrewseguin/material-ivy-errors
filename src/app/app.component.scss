@@ -8,6 +8,13 @@
 .header {
   display: flex;
   justify-content: space-between;
+  height: 64px;
+  align-items: center;
+  padding: 0 16px;
+}
+
+.name {
+  font-size: 18px;
 }
 
 .num-failures {
@@ -46,5 +53,17 @@ label {
     outline: none;
     font-family: Roboto;
     font-size: 18px;
+  }
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  flex: 1;
+
+  mat-spinner {
+    margin-top: 16px;
   }
 }
