@@ -23,3 +23,28 @@ label {
   align-items: center;
   justify-content: center;
 }
+
+.filter-container {
+  border: 1px solid #CCC;
+  max-width: 650px;
+  width: 100%;
+  margin: auto;
+  display: block;
+  padding: 8px 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  color: #444;
+
+  mat-icon {
+    padding-right: 8px;
+  }
+
+  textarea {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-family: Roboto;
+    font-size: 18px;
+  }
+}

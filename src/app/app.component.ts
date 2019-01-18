@@ -1,6 +1,7 @@
 import {ChangeDetectorRef, Component} from '@angular/core';
 import {flattenResults, ParsedResult} from './util/flatten-results.js';
 import {readJson} from './util/read-json.js';
+import {FormControl} from '@angular/forms';
 
 @Component({
   selector: 'app-root',
@@ -9,8 +10,11 @@ import {readJson} from './util/read-json.js';
 })
 export class AppComponent {
   errors: ParsedResult[];
+  filteredErrors: ParsedResult[];
 
-  constructor(private cd: ChangeDetectorRef) {}
+  filter = new FormControl();
+
+  constructor(private cd: ChangeDetectorRef) { }
 
   importFile(input: HTMLInputElement) {
     readJson(input.files[0]).then(json => {

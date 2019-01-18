@@ -1,4 +1,4 @@
-import {Component, Input, ViewChild} from '@angular/core';
+import {Component, Input, SimpleChanges, ViewChild} from '@angular/core';
 import {AngularFirestore} from '@angular/fire/firestore';
 import {FormControl} from '@angular/forms';
 import {MatSort, MatTableDataSource} from '@angular/material';
@@ -29,13 +29,13 @@ export interface RowData {
 export class ErrorCount {
   displayedColumns = ['count', 'relevantException', 'note', 'context'];
 
-  filter = new FormControl();
-
   @ViewChild(MatSort) sort: MatSort;
 
   dataSource = new MatTableDataSource<RowData>();
 
   @Input() errors: ParsedResult[]; // Need to update when errors provided
+
+  @Input() filter: string;
 
   constructor(private db: AngularFirestore) {}
 
@@ -44,12 +44,15 @@ export class ErrorCount {
 
   ngOnInit() {
     this.dataSource.sort = this.sort;
-    this.filter.valueChanges.subscribe(v => this.dataSource.filter = v);
   }
 
-  ngOnChanges() {
-    if (this.errors) {
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['errors'] && changes['errors'].currentValue !== undefined) {
       this.renderErrors();
+    }
+
+    if (changes['filter'] && changes['filter'].currentValue !== undefined) {
+      this.dataSource.filter = this.filter || '';
     }
   }
 
@@ -76,7 +79,7 @@ export class ErrorCount {
 
   /** Watch for changes to the notes on this row's notes in the DB */
   observeStoredNotes(data: RowData) {
-    const document = this.db.collection('errors').doc(data.relevantExceptionKey);
+    const document = this.db.collection('notes').doc(data.relevantExceptionKey);
     return document.valueChanges().subscribe(value => {
       const note = (value && value['note']) || '';
       data.note = note;
@@ -86,7 +89,7 @@ export class ErrorCount {
 
   /** Save form value changes on the row's notes */
   saveNoteChanges(data: RowData) {
-    const document = this.db.collection('errors').doc(data.relevantExceptionKey);
+    const document = this.db.collection('notes').doc(data.relevantExceptionKey);
     return data.noteFormControl.valueChanges.subscribe(value => {
       document.set({
         relevantException: data.relevantException,

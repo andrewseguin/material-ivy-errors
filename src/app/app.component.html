@@ -3,6 +3,11 @@
     Failures: {{errors?.length || '--'}}
   </div>
 
+  <div class="filter-container" *ngIf="errors?.length">
+    <mat-icon>search</mat-icon>
+    <textarea #filter mat-autosize placeholder="Filter"></textarea>
+  </div>
+
   <input type="file" name="file" id="file"
          (change)="importFile($event.target)"
          [style.display]="'none'"/>
@@ -12,4 +17,4 @@
   </label>
 </div>
 
-<error-count [errors]="errors"></error-count>
+<error-count [errors]="errors" [filter]="filter.value" *ngIf="errors?.length"></error-count>
