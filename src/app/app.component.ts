@@ -1,5 +1,5 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
-import {TestError} from './test-error.js';
+import {ChangeDetectorRef, Component} from '@angular/core';
+import {ParsedResult, ResultsParser} from './results-parser.js';
 
 @Component({
   selector: 'app-root',
@@ -8,11 +8,12 @@ import {TestError} from './test-error.js';
 })
 export class AppComponent {
   title = 'errors';
-  errors: TestError[];
+  errors: ParsedResult[];
 
   errorCount = new Map<string, number>();
 
-  constructor(private cd: ChangeDetectorRef) {}
+  constructor(private cd: ChangeDetectorRef,
+              private resultsParser: ResultsParser) {}
 
   importFile(input: HTMLInputElement) {
     const file = input.files[0];
@@ -20,35 +21,12 @@ export class AppComponent {
 
     const reader = new FileReader();
     reader.onload = e => {
-      const errorsJson = JSON.parse(e.target['result']);
-      this.errors = [];
-      this.cacheErrors([], errorsJson);
+      const resultsJson = JSON.parse(e.target['result']);
+      this.errors = this.resultsParser.flattenResults(resultsJson).filter(result => {
+        return result.value.status === 'FAILED';
+      });
       this.cd.detectChanges();
     };
     reader.readAsText(file);
-  }
-
-  /**
-   * Iterate through the nested JSON of errors to cache the error name and status.
-   */
-  cacheErrors(context: string[], obj: any) {
-    Object.keys(obj).forEach(key => {
-      if (key.startsWith('__')) {
-        return;
-      }
-
-      const currentContext = [...context, key];
-      if (obj[key]['log']) {
-        if (obj[key]['status'] === 'FAILED') {
-          this.errors.push({
-            key: currentContext.join(' '),
-            context: currentContext,
-            result: obj[key]
-          });
-        }
-      } else {
-        this.cacheErrors(currentContext, obj[key]);
-      }
-    });
   }
 }

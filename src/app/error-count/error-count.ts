@@ -1,10 +1,9 @@
 import {Component, Input, ViewChild, SimpleChanges} from '@angular/core';
 import {MatSort, MatTableDataSource} from '@angular/material';
-import {TestError} from '../test-error';
 import {FormControl} from '@angular/forms';
 import {AngularFirestore} from '@angular/fire/firestore';
-import {take} from 'rxjs/operators';
 import {Subscription} from 'rxjs';
+import {ParsedResult} from '../results-parser';
 
 export interface ErrorMetadata {
   name: string;
@@ -33,7 +32,7 @@ export class ErrorCount {
 
   dataSource = new MatTableDataSource<RowData>();
 
-  @Input() errors: TestError[]; // Need to update when errors provided
+  @Input() errors: ParsedResult[]; // Need to update when errors provided
 
   constructor(private db: AngularFirestore) {}
 
@@ -59,7 +58,7 @@ export class ErrorCount {
     const metadata = new Map<string, ErrorMetadata>();
 
     this.errors.forEach(e => {
-      const name = this.getRelevantName(e.result.log);
+      const name = this.getRelevantName(e.value.log);
       const errorData = metadata.get(name) || {name, count: 0, context: new Set()};
 
       errorData.count = errorData.count + 1;
