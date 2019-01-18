@@ -5,7 +5,7 @@
 
 <div class="table-container">
 
-<table mat-table [dataSource]="dataSource" matSort>
+<table mat-table [dataSource]="dataSource" matSort matSortActive="count" matSortDirection="desc">
   <!-- Exception -->
   <ng-container matColumnDef="relevantException">
     <th mat-header-cell mat-sort-header *matHeaderCellDef> Relevant Exception </th>
