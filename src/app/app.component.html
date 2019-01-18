@@ -1,6 +1,15 @@
-<div class="num-failures">
-  Failures: {{errors.length}}
-</div>
+<div class="header">
+  <div class="num-failures">
+    Failures: {{errors?.length || '--'}}
+  </div>
 
+  <input type="file" name="file" id="file"
+         (change)="importFile($event.target)"
+         [style.display]="'none'"/>
+  <label for="file" matRipple
+          class="mat-elevation-z4">
+    Upload JSON
+  </label>
+</div>
 
 <error-count [errors]="errors"></error-count>

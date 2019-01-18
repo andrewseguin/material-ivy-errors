@@ -1,5 +1,4 @@
-import { Component } from '@angular/core';
-import * as ERRORS_JSON from './errors.json';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import {TestError} from './test-error.js';
 
 @Component({
@@ -9,13 +8,24 @@ import {TestError} from './test-error.js';
 })
 export class AppComponent {
   title = 'errors';
-  errors: TestError[] = [];
+  errors: TestError[];
 
   errorCount = new Map<string, number>();
 
-  constructor() {
-    this.cacheErrors([], ERRORS_JSON['default']);
-    console.log(this.errors[0]);
+  constructor(private cd: ChangeDetectorRef) {}
+
+  importFile(input: HTMLInputElement) {
+    const file = input.files[0];
+    input.value = null;
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      const errorsJson = JSON.parse(e.target['result']);
+      this.errors = [];
+      this.cacheErrors([], errorsJson);
+      this.cd.detectChanges();
+    };
+    reader.readAsText(file);
   }
 
   /**

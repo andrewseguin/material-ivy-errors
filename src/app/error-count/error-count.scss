@@ -13,18 +13,7 @@ table {
   width: 100%;
 }
 
-.mat-column-context {
-  max-width: 640px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.mat-column-count {
-  padding-left: 16px;
-}
-
-mat-form-field {
+mat-form-field.filter {
   border: 1px solid #CCC;
   max-width: 650px;
   width: 100%;
@@ -32,4 +21,27 @@ mat-form-field {
   display: block;
   padding: 8px 16px;
   border-radius: 8px;
+}
+
+.mat-column-name {
+  max-width: 600px;
+  min-width: 600px;
+}
+
+.mat-column-context {
+  white-space: nowrap;
+}
+
+.mat-column-count {
+  max-width: 80px;
+  padding: 0 16px;
+}
+
+.mat-column-note {
+  padding: 16px;
+  min-width: 500px;
+
+  mat-form-field {
+    width: 100%;
+  }
 }
