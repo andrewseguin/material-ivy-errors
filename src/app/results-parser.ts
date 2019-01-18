@@ -13,29 +13,27 @@ export class ResultsParser {
   /**
    * Parse the karma results nested JSON into a flattened results list.
    */
-  flattenResults(json: JSON): ParsedResult[] {
+  flattenResults(json: JSON, context: string[] = []): ParsedResult[] {
     const results = [];
-    this.iterateResults(results, [], json);
-    return results;
-  }
 
-  private iterateResults(results: any[], context: string[], obj: JSON) {
-    Object.keys(obj).forEach(key => {
+    Object.keys(json).map(key => {
       // Skip any browser error messages
       if (key === '__BROWSER_ERRORS__') {
         return;
       }
 
       const currentContext = [...context, key];
-      if (obj[key]['log']) {
+      if (json[key]['log']) {
         results.push({
           key: currentContext.join(' '),
           context: currentContext,
-          value: obj[key]
+          value: json[key]
         });
       } else {
-        this.iterateResults(results, currentContext, obj[key]);
+        results.push(...this.flattenResults(json[key], currentContext));
       }
     });
+
+    return results;
   }
 }
