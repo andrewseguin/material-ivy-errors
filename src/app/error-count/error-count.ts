@@ -1,17 +1,20 @@
-import {Component, Input, ViewChild, SimpleChanges} from '@angular/core';
-import {MatSort, MatTableDataSource} from '@angular/material';
-import {FormControl} from '@angular/forms';
+import {Component, Input, ViewChild} from '@angular/core';
 import {AngularFirestore} from '@angular/fire/firestore';
+import {FormControl} from '@angular/forms';
+import {MatSort, MatTableDataSource} from '@angular/material';
 import {Subscription} from 'rxjs';
-import {ParsedResult} from '../results-parser';
+import {ParsedResult} from '../util/flatten-results';
 
 export interface ErrorMetadata {
-  name: string;
+  relevantExceptionKey: string;
+  relevantException: string;
   count: number;
   context: Set<string>;
 }
+
 export interface RowData {
-  name: string;
+  relevantExceptionKey: string;
+  relevantException: string;
   count: number;
   context: string;
   note: string; // Save on data for filter to access
@@ -24,7 +27,7 @@ export interface RowData {
   styleUrls: ['error-count.scss'],
 })
 export class ErrorCount {
-  displayedColumns = ['count', 'name', 'note', 'context'];
+  displayedColumns = ['count', 'relevantException', 'note', 'context'];
 
   filter = new FormControl();
 
@@ -44,7 +47,7 @@ export class ErrorCount {
     this.filter.valueChanges.subscribe(v => this.dataSource.filter = v);
   }
 
-  ngOnChanges(changes: SimpleChanges) {
+  ngOnChanges() {
     if (this.errors) {
       this.renderErrors();
     }
@@ -55,78 +58,83 @@ export class ErrorCount {
       this.renderErrorSubscriptions.unsubscribe();
     }
 
-    const metadata = new Map<string, ErrorMetadata>();
+    const metadata = getErrorMetadataByRelevantException(this.errors);
+    this.dataSource.data = generateDataSourceData(metadata);
 
-    this.errors.forEach(e => {
-      const name = this.getRelevantName(e.value.log);
-      const errorData = metadata.get(name) || {name, count: 0, context: new Set()};
-
-      errorData.count = errorData.count + 1;
-      errorData.context.add(e.context[0]);
-
-      metadata.set(name, errorData);
-    });
-
-    const data: RowData[] = [];
-    metadata.forEach(v => {
-      data.push({
-        name: v.name,
-        count: v.count,
-        context: Array.from(v.context).join(', '),
-        note: '',
-        noteFormControl: new FormControl()
-      });
-    });
-    this.dataSource.data = data;
-
+    // For each RowData, observe when the notes change in the database as well as save the local
+    // notes to the database when the input changes.
     this.renderErrorSubscriptions = new Subscription();
-    data.forEach(d => {
-      const key = this.generateKey(d.name);
-      const document = this.db.collection('errors').doc(key);
-
-      const dbValueChangeSub = document.valueChanges().subscribe(value => {
-        const note = (value && value['note']) || '';
-        d.note = note;
-        d.noteFormControl.setValue(note, {emitEvent: false});
-      });
-      this.renderErrorSubscriptions.add(dbValueChangeSub);
-
-      const formValueChangeSub = d.noteFormControl.valueChanges.subscribe(value => {
-        document.set({
-          name: d.name,
-          key,
-          note: value,
-        });
-      });
-      this.renderErrorSubscriptions.add(formValueChangeSub);
+    this.dataSource.data.forEach(rowData => {
+      this.renderErrorSubscriptions.add(this.observeStoredNotes(rowData));
+      this.renderErrorSubscriptions.add(this.saveNoteChanges(rowData));
     });
-  }
-
-  /**
-   * Currently the most relevant error name is one that does not include "configurable", so if
-   * another error exists, use that. Otherwise default to the first line.
-   */
-  getRelevantName(log: string[]) {
-    for (let i = 0; i < log.length; i++) {
-      if (log[i].indexOf('Error:') !== -1 && log[i].indexOf('configurable') === -1) {
-        return log[i];
-      }
-    }
-
-    return log[0];
   }
 
   getArrayFromSet(s: Set<any>) {
     return Array.from(s);
   }
 
-  generateKey(name: string) {
-    let key = 0;
-
-    for (let i = 0; i < name.length; i++) {
-      key += (name.charCodeAt(i) * i);
-    }
-
-    return `${key}`;
+  /** Watch for changes to the notes on this row's notes in the DB */
+  observeStoredNotes(data: RowData) {
+    const document = this.db.collection('errors').doc(data.relevantExceptionKey);
+    return document.valueChanges().subscribe(value => {
+      const note = (value && value['note']) || '';
+      data.note = note;
+      data.noteFormControl.setValue(note, {emitEvent: false});
+    });
   }
+
+  /** Save form value changes on the row's notes */
+  saveNoteChanges(data: RowData) {
+    const document = this.db.collection('errors').doc(data.relevantExceptionKey);
+    return data.noteFormControl.valueChanges.subscribe(value => {
+      document.set({
+        relevantException: data.relevantException,
+        relevantExceptionKey: data.relevantExceptionKey,
+        note: value,
+      });
+    });
+  }
+}
+
+/**
+ * Gathers up all errors according to their relevant exception and coalesces them into groups with
+ * set of contexts and count.
+ */
+function getErrorMetadataByRelevantException(errors: ParsedResult[]): Map<string, ErrorMetadata> {
+  const metadata = new Map<string, ErrorMetadata>();
+
+  errors.forEach(e => {
+    const relevantException = e.relevantException;
+    const errorData = metadata.get(relevantException) || {
+      relevantExceptionKey: e.relevantExceptionKey,
+      relevantException: relevantException,
+      count: 0,
+      context: new Set()
+    };
+
+    errorData.count = errorData.count + 1;
+    errorData.context.add(e.context[0]);
+
+    metadata.set(relevantException, errorData);
+  });
+
+  return metadata;
+}
+
+function generateDataSourceData(metadata: Map<string, ErrorMetadata>) {
+  const data: RowData[] = [];
+
+  metadata.forEach(v => {
+    data.push({
+      relevantExceptionKey: v.relevantExceptionKey,
+      relevantException: v.relevantException,
+      count: v.count,
+      context: Array.from(v.context).join(', '),
+      note: '',
+      noteFormControl: new FormControl()
+    });
+  });
+
+  return data;
 }

@@ -1,5 +1,6 @@
 import {ChangeDetectorRef, Component} from '@angular/core';
-import {ParsedResult, ResultsParser} from './results-parser.js';
+import {flattenResults, ParsedResult} from './util/flatten-results.js';
+import {readJson} from './util/read-json.js';
 
 @Component({
   selector: 'app-root',
@@ -7,26 +8,15 @@ import {ParsedResult, ResultsParser} from './results-parser.js';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'errors';
   errors: ParsedResult[];
 
-  errorCount = new Map<string, number>();
-
-  constructor(private cd: ChangeDetectorRef,
-              private resultsParser: ResultsParser) {}
+  constructor(private cd: ChangeDetectorRef) {}
 
   importFile(input: HTMLInputElement) {
-    const file = input.files[0];
-    input.value = null;
-
-    const reader = new FileReader();
-    reader.onload = e => {
-      const resultsJson = JSON.parse(e.target['result']);
-      this.errors = this.resultsParser.flattenResults(resultsJson).filter(result => {
-        return result.value.status === 'FAILED';
-      });
+    readJson(input.files[0]).then(json => {
+      this.errors = flattenResults(json).filter(result => result.value.status === 'FAILED');
       this.cd.detectChanges();
-    };
-    reader.readAsText(file);
+    });
+    input.value = null;
   }
 }

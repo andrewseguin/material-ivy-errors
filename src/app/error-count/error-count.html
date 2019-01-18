@@ -7,9 +7,9 @@
 
 <table mat-table [dataSource]="dataSource" matSort>
   <!-- Exception -->
-  <ng-container matColumnDef="name">
-    <th mat-header-cell mat-sort-header *matHeaderCellDef> Error </th>
-    <td mat-cell *matCellDef="let data"> {{data.name}} </td>
+  <ng-container matColumnDef="relevantException">
+    <th mat-header-cell mat-sort-header *matHeaderCellDef> Relevant Exception </th>
+    <td mat-cell *matCellDef="let data"> {{data.relevantException}} </td>
   </ng-container>
 
   <!-- Context -->
