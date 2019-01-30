@@ -11,10 +11,6 @@
     <mat-icon>search</mat-icon>
     <textarea #filter mat-autosize placeholder="Filter"></textarea>
   </div>
-
-  <button mat-button (click)="uploadJson()">
-    Upload
-  </button>
 </div>
 
 <error-count [errors]="errors" [filter]="filter.value" *ngIf="errors?.length"></error-count>
@@ -24,10 +20,15 @@
   <mat-spinner diameter="48"></mat-spinner>
 </div>
 
-<div class="uploaded-files-list" *ngIf="!name">
-  <h1> Uploaded Files </h1>
-  <a *ngFor="let name of uploadedJsonFiles | async"
-      routerLink="." [queryParams]="{name: name}">
-    {{name}}
-  </a>
+<div *ngIf="!name" class="empty-state">
+  <button mat-stroked-button color="primary" (click)="uploadJson()">
+    Upload
+  </button>
+
+  <div class="uploaded-files-list">
+    <a *ngFor="let name of uploadedJsonFiles | async"
+        routerLink="." [queryParams]="{name: name}">
+      {{name}}
+    </a>
+  </div>
 </div>

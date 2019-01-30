@@ -74,8 +74,20 @@ label {
   }
 }
 
-.uploaded-files-list {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
+
+.empty-state {
+  margin: 16px;
+
+  button {
+    margin-bottom: 32px;
+  }
+
+  .uploaded-files-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  a {
+    margin: 16px 0;
+  }
 }
