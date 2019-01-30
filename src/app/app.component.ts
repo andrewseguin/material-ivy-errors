@@ -5,9 +5,10 @@ import {AngularFireStorage} from '@angular/fire/storage';
 import {FormControl} from '@angular/forms';
 import {MatDialog} from '@angular/material';
 import {ActivatedRoute, Router} from '@angular/router';
-import {take} from 'rxjs/operators';
+import {take, map} from 'rxjs/operators';
 import {UploadJson} from './upload-json/upload-json';
 import {ParsedResult, flattenResults} from './util/flatten-results.js';
+import {Observable, Subscription} from 'rxjs';
 
 interface UploadedJson {
   id: string;
@@ -30,26 +31,39 @@ export class AppComponent {
 
   name: string;
 
-  loading = false;
+  loadingErrors: Subscription;
 
-  constructor(private cd: ChangeDetectorRef,
-              private db: AngularFirestore,
+  uploadedJsonFiles: Observable<string[]>;
+
+  constructor(private db: AngularFirestore,
               private http: HttpClient,
               private storage: AngularFireStorage,
               private route: ActivatedRoute,
               private router: Router,
               private dialog: MatDialog) {
+    this.uploadedJsonFiles = this.db.collection<{name: string}>('uploadedJsonFiles').valueChanges()
+        .pipe(map(values => {
+          return values.map(v => v['name']).sort();
+        }));
     this.route.queryParamMap.subscribe(queryParamMap => {
       const name = queryParamMap.get('name');
       if (name) {
         this.name = name;
+        this.errors = [];
         this.storage.ref(name).getDownloadURL().pipe(take(1)).subscribe(url => {
-          this.loading = true;
-          this.http.get(url).subscribe(json => {
+          this.loadingErrors = this.http.get(url).subscribe(json => {
             this.errors = flattenResults(json as JSON).filter(r => r.value.status === 'FAILED');
-            this.loading = false;
+            this.loadingErrors = null;
           });
         });
+      } else {
+        if (this.loadingErrors) {
+          this.loadingErrors.unsubscribe();
+          this.loadingErrors = null;
+        }
+
+        this.name = null;
+        this.errors = null;
       }
     });
   }
@@ -58,6 +72,7 @@ export class AppComponent {
     this.dialog.open(UploadJson, {minWidth: '400px'}).afterClosed()
       .subscribe((name: string) => {
         if (name) {
+          this.db.collection('uploadedJsonFiles').add({name});
           this.router.navigate(['.'], {queryParams: {name}});
         }
       });

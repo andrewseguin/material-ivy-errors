@@ -1,9 +1,13 @@
 <div class="header">
+
   <div class="name" *ngIf="name">
+    <a mat-icon-button routerLink="." [queryParams]="{name: ''}">
+      <mat-icon>arrow_back</mat-icon>
+    </a>
     {{name}} - {{errors?.length || '--'}} failures
   </div>
 
-  <div class="filter-container">
+  <div class="filter-container" [style.visibility]="errors?.length > 0 ? 'visible' : 'hidden'">
     <mat-icon>search</mat-icon>
     <textarea #filter mat-autosize placeholder="Filter"></textarea>
   </div>
@@ -15,7 +19,15 @@
 
 <error-count [errors]="errors" [filter]="filter.value" *ngIf="errors?.length"></error-count>
 
-<div *ngIf="loading" class="loading">
+<div *ngIf="loadingErrors" class="loading">
   Loading results
   <mat-spinner diameter="48"></mat-spinner>
+</div>
+
+<div class="uploaded-files-list" *ngIf="!name">
+  <h1> Uploaded Files </h1>
+  <a *ngFor="let name of uploadedJsonFiles | async"
+      routerLink="." [queryParams]="{name: name}">
+    {{name}}
+  </a>
 </div>

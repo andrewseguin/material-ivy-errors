@@ -27,7 +27,9 @@ export class UploadJson {
 
     const task = this.storage.upload(this.nameFormControl.value, this.file);
     this.uploadPercent = task.percentageChanges();
-    task.then(snapshot => this.dialogRef.close(snapshot.ref.name));
+    task.then(snapshot => {
+      this.dialogRef.close(snapshot.ref.name);
+    });
   }
 
   setFile(input: HTMLInputElement) {
