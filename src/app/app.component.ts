@@ -10,10 +10,9 @@ import {UploadJson} from './upload-json/upload-json';
 import {ParsedResult, flattenResults} from './util/flatten-results.js';
 import {Observable, Subscription} from 'rxjs';
 
-interface UploadedJson {
-  id: string;
+interface UploadedJsonFile {
   name: string;
-  json?: string;
+  dateAdded: string;
 }
 
 @Component({
@@ -41,9 +40,10 @@ export class AppComponent {
               private route: ActivatedRoute,
               private router: Router,
               private dialog: MatDialog) {
-    this.uploadedJsonFiles = this.db.collection<{name: string}>('uploadedJsonFiles').valueChanges()
+    this.uploadedJsonFiles = this.db.collection<UploadedJsonFile>('uploadedJsonFiles').valueChanges()
         .pipe(map(values => {
-          return values.map(v => v['name']).sort();
+          console.log(values);
+          return values.sort((a, b) => a.dateAdded > b.dateAdded ? -1 : 1).map(v => v['name']);
         }));
     this.route.queryParamMap.subscribe(queryParamMap => {
       const name = queryParamMap.get('name');
@@ -72,7 +72,7 @@ export class AppComponent {
     this.dialog.open(UploadJson, {minWidth: '400px'}).afterClosed()
       .subscribe((name: string) => {
         if (name) {
-          this.db.collection('uploadedJsonFiles').add({name});
+          this.db.collection('uploadedJsonFiles').add({name, dateAdded: new Date().toISOString()});
           this.router.navigate(['.'], {queryParams: {name}});
         }
       });

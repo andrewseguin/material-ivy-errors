@@ -44,5 +44,5 @@ export class UploadJson {
 }
 
 function getDefaultName() {
-  return new DatePipe('en-us').transform(new Date(), 'y-M-d h:mm:ss a');
+  return new DatePipe('en-us').transform(new Date(), 'y-M-d HH:mm:ss');
 }
