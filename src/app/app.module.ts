@@ -12,6 +12,7 @@ import {environment} from 'src/environments/environment';
 import {AppComponent} from './app.component';
 import {ErrorCount} from './error-count/error-count';
 import {UploadJsonModule} from './upload-json/upload-json.module';
+import {ContextListModule} from './context-list/context-list.module';
 
 @NgModule({
   declarations: [
@@ -37,6 +38,7 @@ import {UploadJsonModule} from './upload-json/upload-json.module';
     AngularFireStorageModule,
     MatRippleModule,
     UploadJsonModule,
+    ContextListModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

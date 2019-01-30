@@ -10,7 +10,11 @@
     <!-- Context -->
     <ng-container matColumnDef="context">
       <th mat-header-cell mat-sort-header *matHeaderCellDef> Context </th>
-      <td mat-cell *matCellDef="let data"> {{data.context}} </td>
+      <td mat-cell *matCellDef="let data">
+        <div class="context" mat-ripple (click)="openContextListDialog(data.contextList)">
+          {{data.context}}
+        </div>
+      </td>
     </ng-container>
 
     <!-- Count -->

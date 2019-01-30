@@ -1,15 +1,17 @@
 import {Component, Input, SimpleChanges, ViewChild} from '@angular/core';
 import {AngularFirestore} from '@angular/fire/firestore';
 import {FormControl} from '@angular/forms';
-import {MatSort, MatTableDataSource} from '@angular/material';
+import {MatSort, MatTableDataSource, MatDialog} from '@angular/material';
 import {Subscription} from 'rxjs';
 import {ParsedResult} from '../util/flatten-results';
+import {ContextList} from '../context-list/context-list';
 
 export interface ErrorMetadata {
   relevantExceptionKey: string;
   relevantException: string;
   count: number;
   context: Set<string>;
+  contextList: string[];
 }
 
 export interface RowData {
@@ -17,6 +19,7 @@ export interface RowData {
   relevantException: string;
   count: number;
   context: string;
+  contextList: string[];
   note: string; // Save on data for filter to access
   noteFormControl: FormControl;
 }
@@ -37,7 +40,8 @@ export class ErrorCount {
 
   @Input() filter: string;
 
-  constructor(private db: AngularFirestore) {}
+  constructor(private db: AngularFirestore,
+              private dialog: MatDialog) {}
 
   /** Collection of subscriptions used for rendering - includes form and db value changes */
   renderErrorSubscriptions: Subscription;
@@ -98,6 +102,10 @@ export class ErrorCount {
       });
     });
   }
+
+  openContextListDialog(list: string[]) {
+    this.dialog.open(ContextList, {minWidth: '400px', maxHeight: '80vh', data: {list}});
+  }
 }
 
 /**
@@ -113,11 +121,13 @@ function getErrorMetadataByRelevantException(errors: ParsedResult[]): Map<string
       relevantExceptionKey: e.relevantExceptionKey,
       relevantException: relevantException,
       count: 0,
-      context: new Set()
+      context: new Set(),
+      contextList: []
     };
 
     errorData.count = errorData.count + 1;
     errorData.context.add(e.context[0]);
+    errorData.contextList.push(e.context.join (' '));
 
     metadata.set(relevantException, errorData);
   });
@@ -134,6 +144,7 @@ function generateDataSourceData(metadata: Map<string, ErrorMetadata>) {
       relevantException: v.relevantException,
       count: v.count,
       context: Array.from(v.context).join(', '),
+      contextList: v.contextList,
       note: '',
       noteFormControl: new FormControl()
     });

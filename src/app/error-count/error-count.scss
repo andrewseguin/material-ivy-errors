@@ -35,3 +35,13 @@ table {
     width: 100%;
   }
 }
+
+.context {
+  display: inline-block;
+  padding: 4px;
+  cursor: pointer;
+}
+
+th.mat-column-context {
+  padding-left: 4px;
+}
