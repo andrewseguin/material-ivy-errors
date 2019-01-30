@@ -21,14 +21,17 @@
 </div>
 
 <div *ngIf="!name" class="empty-state">
-  <button mat-stroked-button color="primary" (click)="uploadJson()">
+  <button mat-stroked-button color="primary"
+          class="upload" (click)="uploadJson()">
     Upload
   </button>
 
   <div class="uploaded-files-list">
-    <a *ngFor="let name of uploadedJsonFiles | async"
-        routerLink="." [queryParams]="{name: name}">
-      {{name}}
-    </a>
+    <div class="file" *ngFor="let name of uploadedJsonFiles | async">
+      <a routerLink="." [queryParams]="{name: name}"> {{name}} </a>
+      <button mat-icon-button (click)="remove(name)">
+        <mat-icon> close </mat-icon>
+      </button>
+    </div>
   </div>
 </div>

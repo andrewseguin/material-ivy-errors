@@ -72,9 +72,17 @@ export class AppComponent {
     this.dialog.open(UploadJson, {minWidth: '400px'}).afterClosed()
       .subscribe((name: string) => {
         if (name) {
-          this.db.collection('uploadedJsonFiles').add({name, dateAdded: new Date().toISOString()});
+          this.db.collection('uploadedJsonFiles').doc(name).set({
+            name,
+            dateAdded: new Date().toISOString()
+          });
           this.router.navigate(['.'], {queryParams: {name}});
         }
       });
+  }
+
+  remove(name: string) {
+    this.db.collection('uploadedJsonFiles').doc(name).delete();
+    this.storage.ref(name).delete();
   }
 }

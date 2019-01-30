@@ -78,7 +78,7 @@ label {
 .empty-state {
   margin: 16px;
 
-  button {
+  button.upload {
     margin-bottom: 32px;
   }
 
@@ -87,7 +87,9 @@ label {
     flex-direction: column;
   }
 
-  a {
+  .file {
+    display: flex;
+    align-items: center;
     margin: 16px 0;
   }
 }
