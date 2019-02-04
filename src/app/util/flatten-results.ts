@@ -17,7 +17,7 @@ export function flattenResults(json: JSON, parentContext: string[] = []): Parsed
     const context = [...parentContext, key];
     const log = json[key]['log'];
     if (log) {
-      const relevantException = getRelevantException(log);
+      const relevantException = log[0];
       results.push({
         relevantExceptionKey: generateKey(relevantException),
         relevantException: relevantException,
@@ -30,20 +30,6 @@ export function flattenResults(json: JSON, parentContext: string[] = []): Parsed
   });
 
   return results;
-}
-
-  /**
-   * Currently the most relevant error name is one that does not include "configurable", so if
-   * another error exists, use that. Otherwise default to the first line.
-   */
-function getRelevantException(log: string[]) {
-  for (let i = 0; i < log.length; i++) {
-    if (log[i].indexOf('Error:') !== -1 && log[i].indexOf('configurable') === -1) {
-      return log[i];
-    }
-  }
-
-  return log[0];
 }
 
 /** Generates a fairly unique number for the provided string. */
